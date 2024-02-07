@@ -2,162 +2,147 @@
 <html>
 
 <head>
-  <title>An encyclopedia</title>
-  <style>
-    * {
-      margin: 0;
-      overflow: hidden
-    }
-  </style>
+    <title>A Simple Game</title>
+    <style>
+        * {
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
 </head>
 
 <body>
-  <canvas id="canv">
-  </canvas>
+    <canvas id="canv">
+    </canvas>
 
-  <script>
-    //The "model" of our game, i.e., the position of the circle in x
-    let circleX = 0
-    let circleY = 0
-    let time = 0
-    let keysDown = []
-    let isDead = false;
-    let deathTimer = 0;
+    <script>
+        //The "model" of our game, i.e., the position of the circle in x
+        let x = 0
+        let y = 0
+        let score = 0
+        let keysDown = []
+        let isDead = false;
 
-    function restart() {
-      circleX = 0;
-      circleY = 0;
-      time = 0;
-      keysDown = []
-      isDead = false;
-      deathTimer = 0;
-    }
+        /**
+         * The game loop.
+         * The game loop calls update and draw using a timer
+         */
+        function gameLoop() {
+            update()
+            draw()
+        }
 
-    /**
-     * The game loop.
-     * The game loop calls update and draw using a timer
-     */
-    function gameLoop() {
-      if (!isDead) {
-        update()
-        draw()
-      }
-      else {
+        /**
+         * Update the model.
+         * Note that this function *only*
+         * changes the model. No drawing happens
+         */
+        function update() {
+            //a++
+            if (!isDead) {
+                let speed = 100
+                if (keysDown.includes("ArrowLeft"))
+                    x -= speed / fps
+                if (keysDown.includes("ArrowRight"))
+                    x += speed / fps
+                if (keysDown.includes("ArrowUp"))
+                    y -= speed / fps
+                if (keysDown.includes("ArrowDown"))
+                    y += speed / fps
+                score++
 
-        deathTimer++
+                if (x < 0) {
+                    isDead = true;
+                }
+            }
 
-        let canvas = document.querySelector("#canv")
-        let ctx = canvas.getContext("2d")
+        }
 
-        ctx.fillStyle = "black"
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = "red"
-        ctx.fillText("You died", 100, 100);
+        /**
+         * Draw the model.
+         * Note that we only *read* the model, we never change it
+         * This allows of separation of concerns
+         */
+        function draw() {
+            //Get the canvas element and its context
+            let canvas = document.querySelector("#canv")
+            let ctx = canvas.getContext("2d")
 
-        if (deathTimer > 100)
-          restart()
-      }
-    }
-
-    /**
-     * Update the model.
-     * Note that this function *only*
-     * changes the model. No drawing happens
-     */
-    function update() {
-      time++
-
-      //Move the circle based on the input
-      if (keysDown.includes("ArrowLeft"))
-        circleX -= 1;
-      if (keysDown.includes("ArrowRight"))
-        circleX += 1;
-      if (keysDown.includes("ArrowUp"))
-        circleY -= 1;
-      if (keysDown.includes("ArrowDown"))
-        circleY += 1;
-
-      if (circleX < 0) {
-        console.log("You died")
-        isDead = true;
-      }
-    }
-
-    /**
-     * Draw the model.
-     * Note that we only *read* the model, we never change it
-     * This allows of separation of concerns
-     */
-    function draw() {
-      //Get the canvas element and its context
-      let canvas = document.querySelector("#canv")
-      let ctx = canvas.getContext("2d")
-
-      //Clear the canvas
-      ctx.fillStyle = "lightgray"
-      ctx.beginPath()
-      ctx.rect(0, 0, canvas.width, canvas.height)
-      ctx.fill()
+            if (!isDead) {
 
 
-      //Draw the circle with a green interior
-      //and purple outline
-      ctx.beginPath();
-      ctx.fillStyle = "green"
-      ctx.strokeStyle = "purple"
-      ctx.lineWidth = 5
-      ctx.arc(50 + circleX, circleY + 50, 50, 0, Math.PI * 2)
-      ctx.fill()
-      ctx.stroke()
+                //Clear the canvas
+                ctx.fillStyle = "lightgray"
+                ctx.beginPath()
+                ctx.rect(0, 0, canvas.width, canvas.height)
+                ctx.fill()
 
-      //Draw the number of frames
-      ctx.fillStyle = "black"
-      ctx.font = "30px Arial"
-      ctx.fillText("Score: " + time, 10, 30);
 
-      //Draw which keys are down
-      ctx.fillStyle = "black"
-      ctx.font = "20px Serif"
-      ctx.fillText("Keys Down: ", 10, 50)
+                //Draw the circle with a green interior
+                //and purple outline
+                ctx.beginPath();
+                ctx.fillStyle = "green"
+                ctx.strokeStyle = "purple"
+                ctx.lineWidth = 5
+                ctx.arc(50 + x, 50 + y, 50, 0, Math.PI * 2)
+                ctx.fill()
+                ctx.stroke()
 
-      for (let i = 0; i < keysDown.length; i++) {
-        ctx.fillText(keysDown[i], 10, 50 + 20 * (i + 1))
-      }
-    }
 
-    function keydown(e) {
-      //console.log(e.code)
-      if (!keysDown.includes(e.code))
-        keysDown.push(e.code)
+            }
+            else {
+                ctx.fillStyle = "black"
+                ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-    }
+                ctx.fillStyle = "red"
+                ctx.font = "30px Comic Sans MS"
+                ctx.fillText("You Died", 30, 60)
+            }
 
-    function keyup(e) {
-      //console.log(e.code)
-      let index = keysDown.indexOf(e.code)
-      keysDown.splice(index, 1);
-    }
+            ctx.fillStyle = "white"
+            ctx.font = "30px Times"
+            ctx.fillText(score, 0, 30)
+        }
 
-    function setup() {
-      let canvas = document.querySelector("#canv")
-      let ctx = canvas.getContext("2d")
+        function keyup(e) {
+            //console.log(e)
+            let index = keysDown.indexOf(e.code)
+            keysDown.splice(index, 1)
+            //keysDown.remove(e)
+            // if(e.code == "ArrowLeft"){
+            //     a--
+            // }
+            // if(e.code == "ArrowRight"){
+            //     a++
+            // }
+        }
+        function keydown(e) {
+            //console.log(e)
+            if (!keysDown.includes(e.code))
+                keysDown.push(e.code)
+        }
 
-      //Make the canvas the same size as our window
-      //so it is "full screen"
-      canvas.width = window.innerWidth
-      canvas.height = window.innerHeight
+        function setup() {
+            document.addEventListener("keydown", keydown)
+            document.addEventListener("keyup", keyup)
 
-      //Now add input controls
-      document.addEventListener("keydown", keydown);
-      document.addEventListener("keyup", keyup);
-    }
+            let canvas = document.querySelector("#canv")
+            let ctx = canvas.getContext("2d")
 
-    setup()
+            //Make the canvas the same size as our window
+            //so it is "full screen"
+            canvas.width = window.innerWidth
+            canvas.height = window.innerHeight
+        }
 
-    //In the background, create a thread and call
-    //gameLoop every 100ms.
-    setInterval(gameLoop, 20)
-  </script>
+        setup()
+
+        //In the background, create a thread and call
+        //gameLoop every 100ms.
+        let ms = 20;
+        let fps = 1000 / ms;
+        setInterval(gameLoop, ms)
+    </script>
 </body>
 
 </html>
